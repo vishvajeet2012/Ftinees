@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
 // You can configure different models here (e.g., gemini-pro, gemini-pro-vision)
 const modelConfig = {
-  model: 'gemini-3-pro-preview',
+  model: 'gemini-1.5-flash',
   generationConfig: {
     maxOutputTokens: 2048,
     temperature: 0.7,
