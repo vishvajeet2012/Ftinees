@@ -1,0 +1,42 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dynamic Gradient: Deep Teal to Electric Lime (Energy & Health) -->
+    <linearGradient id="velocityGradient" x1="0" y1="512" x2="512" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0EA5E9" /> <!-- Sky-500 -->
+      <stop offset="50%" stop-color="#2DD4BF" /> <!-- Teal-400 -->
+      <stop offset="100%" stop-color="#A3E635" /> <!-- Lime-400 -->
+    </linearGradient>
+    
+    <!-- Speed/Motion Blur Filter -->
+    <filter id="speed" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="2" result="soft"/>
+      <feMerge>
+        <feMergeNode in="soft"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- The "F" Monogram constructed of motion segments -->
+  <g transform="translate(56, 56) scale(0.8)">
+    <!-- Top Bar / Head of the Runner -->
+    <path d="M60 40 L340 40 C370 40 390 65 375 90 L335 150 C320 175 290 190 260 190 L60 190 L60 40Z" 
+          fill="url(#velocityGradient)" 
+          filter="url(#speed)" />
+          
+    <!-- Middle Bar / Arm -->
+    <path d="M60 230 L260 230 C290 230 310 255 295 280 L255 340 C240 365 210 380 180 380 L60 380 L60 230Z" 
+          fill="url(#velocityGradient)" 
+          opacity="0.9" />
+          
+    <!-- Vertical Spine / Backbone (NOW UNIFIED with styling) -->
+    <!-- Changed fill from dark #0F172A to the main gradient for cohesion -->
+    <path d="M60 40 V460 L140 460 V40 H60Z" 
+          fill="url(#velocityGradient)" 
+          opacity="0.95" />
+          
+    <!-- Accents: Digital Sparks -->
+    <circle cx="420" cy="80" r="15" fill="#A3E635" />
+    <circle cx="340" cy="270" r="12" fill="#2DD4BF" />
+  </g>
+</svg>
