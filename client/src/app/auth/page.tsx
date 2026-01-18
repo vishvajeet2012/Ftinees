@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 
 import api from "@/api";
+import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -100,14 +101,20 @@ export default function AuthPage() {
     },
   });
 
+  // Store
+  const setAuth = useAuthStore((state) => state.setAuth);
+
   // Login Submit
   const onLoginSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
       const res = await api.post("/auth/login", data);
-      const { token, name } = res.data.data;
+      const { token, ...user } = res.data.data; // user has name, email, _id
+      
+      setAuth(user, token); // Save to Store
       Cookies.set("token", token, { expires: 30 });
-      toast.success(`Welcome back, ${name}!`);
+      
+      toast.success(`Welcome back, ${user.name}!`);
       router.push("/dashboard");
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
@@ -124,8 +131,13 @@ export default function AuthPage() {
       const heightInCm = data.feet * 30.48 + data.inches * 2.54;
       const payload = { ...data, height: Math.round(heightInCm) };
       const res = await api.post("/auth/register", payload);
-      const { token, onboardingNote } = res.data.data;
+      
+      const { token, onboardingNote, ...userRest } = res.data.data;
+      const user = { ...userRest, onboardingNote };
+      
+      setAuth(user, token); // Save to Store
       Cookies.set("token", token, { expires: 30 });
+      
       toast.success("Welcome!", { description: onboardingNote });
       router.push("/dashboard");
     } catch (error: unknown) {

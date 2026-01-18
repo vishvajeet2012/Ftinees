@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Activity, ArrowUpRight, Dumbbell, Flame, TrendingUp } from "lucide-react"
+import { useAuthStore } from "@/store/useAuthStore"
 
 // Dummy Data
 const quickStats = [
@@ -39,13 +40,15 @@ const recentWorkouts = [
 ]
 
 export default function DashboardPage() {
+  const user = useAuthStore((state) => state.user);
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
       
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-white">Good Morning, Alex 👋</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-white">Good Morning, {user?.name?.split(" ")[0] || "Athlete"} 👋</h2>
           <p className="text-zinc-400">Ready to crush your goals today?</p>
         </div>
         <div className="flex gap-2">
@@ -125,7 +128,7 @@ export default function DashboardPage() {
              <CardContent>
                 <div className="p-4 rounded-xl bg-black/40 border border-white/5">
                     <p className="text-zinc-200 text-sm italic">
-                        "Great job on the Chest Volume, Alex! Your generic bench strength is up 5%. Suggest increasing rest time between sets to 3 mins for next heavy session."
+                        &quot;{user?.onboardingNote || "Welcome to FitMetric! Start logging workouts to get personalized insights."}&quot;
                     </p>
                     <div className="mt-4 flex gap-2">
                         <span className="text-xs bg-purple-500/10 text-purple-300 px-2 py-1 rounded-full border border-purple-500/20">Recovery: Good</span>
