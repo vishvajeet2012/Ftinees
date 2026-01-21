@@ -1,0 +1,5 @@
+PORT=5000
+MONGO_URI=mongodb+srv://kingofjalore2_db_user:ge0SeaxLKU5JrrtP@cluster0.fx3e71q.mongodb.net/?appName=Cluster0
+NODE_ENV=development 
+
+GEMINI_API_KEY=AIzaSyCHzfY7woqrm3BPPT5sTwuNkV0qZ0OT3yE
