@@ -42,6 +42,36 @@ class AuthController {
       next(error);
     }
   }
+
+  // @desc    Get current user profile
+  // @route   GET /api/auth/me
+  // @access  Private
+  async getMe(req, res, next) {
+    try {
+      const user = await AuthService.getUserProfile(req.user._id);
+      res.status(200).json({
+        success: true,
+        data: user
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // @desc    Update user profile
+  // @route   PUT /api/auth/profile
+  // @access  Private
+  async updateProfile(req, res, next) {
+    try {
+      const updatedUser = await AuthService.updateUserProfile(req.user._id, req.body);
+      res.status(200).json({
+        success: true,
+        data: updatedUser
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

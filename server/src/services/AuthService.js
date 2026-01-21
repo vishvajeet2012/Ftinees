@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const GeminiClient = require('../integrations/geminiClient');
+const TFClient = require('../integrations/tfClient');
 const myCache = require('../utils/cache');
 const env = require('../config/env');
 
@@ -30,23 +30,19 @@ class AuthService {
       bmi = (weight / ((height / 100) ** 2)).toFixed(1);
     }
 
-    // 4. Generate AI Insight (Async but awaited for onboarding impact)
-    // NOTE: In high traffic, you might want to do this in background.
-    // For "Pro" onboarding experience, we await it to show immediately.
+    // 4. Generate AI Insight (TensorFlow Prediction)
     let onboardingNote = 'Welcome to FitMetric!';
+    let fitnessScore = 0;
     try {
-      const insight = await GeminiClient.generateOnboardingInsight({
-        name,
-        goal,
-        bmi,
-        age,
-        gender,
-        fitnessLevel,
-        activityLevel
-      });
-      if (insight) onboardingNote = insight;
+      if (height && weight && age) {
+        const score = await TFClient.predictFitnessScore({
+          weight, height, age, activityLevel, gender, pushups, fitnessLevel
+        });
+        fitnessScore = score;
+        onboardingNote = `Your AI-calculated Fitness Score is ${score}/100. Let's improve it!`;
+      }
     } catch (err) {
-      console.warn('AI Onboarding failed, using default.');
+      console.warn('TF Prediction failed, using default.');
     }
 
     // 5. Create User
@@ -64,6 +60,7 @@ class AuthService {
       fitnessLevel,
       activityLevel,
       onboardingNote,
+      fitnessScore,
     });
 
     // 6. Warm Cache
@@ -119,6 +116,53 @@ class AuthService {
     return jwt.sign({ id }, JWT_SECRET, {
       expiresIn: '30d',
     });
+  }
+
+  /**
+   * Get user profile by ID
+   */
+  async getUserProfile(userId) {
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateUserProfile(userId, updateData) {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Allowed fields to update
+    const allowedUpdates = [
+      'name', 'goal', 'height', 'weight', 'gender', 
+      'age', 'location', 'pushups', 'fitnessLevel', 'activityLevel'
+    ];
+
+    allowedUpdates.forEach((field) => {
+      if (updateData[field] !== undefined) {
+        user[field] = updateData[field];
+      }
+    });
+
+    // Special handling if weight is updated (Recalculate BMI maybe? For now just save)
+    
+    await user.save();
+    
+    // Update cache
+    myCache.set(`user_${user._id}`, user.toObject());
+
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      ...updateData
+    };
   }
 }
 

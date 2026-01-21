@@ -57,6 +57,14 @@ const userSchema = new mongoose.Schema(
     onboardingNote: {
       type: String, // AI Generated Welcome Message
     },
+    fitnessScore: {
+      type: Number,
+      default: 0,
+    },
+    hasCompletedOnboarding: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

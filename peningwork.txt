@@ -1,0 +1,10 @@
+Pending Work:
+
+1. [COMPLETED] User Profile Endpoint (`GET /api/auth/me` & `PUT /api/auth/profile`)
+   - Description: API to fetch and update authenticated user details. Implemented in AuthService, AuthController, and AuthRoutes.
+
+3. Password Reset / Forgot Password
+   - Description: Implementation of a flow to allow users to reset their password if forgotten.
+
+4. Exercise Search API
+   - Description: Add search functionality to the exercises endpoint (`/api/exercises?search=query`) to handle large lists efficiently.

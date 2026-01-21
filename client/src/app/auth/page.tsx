@@ -109,13 +109,19 @@ export default function AuthPage() {
     setLoading(true);
     try {
       const res = await api.post("/auth/login", data);
-      const { token, ...user } = res.data.data; // user has name, email, _id
+      const { token, ...user } = res.data.data;
       
-      setAuth(user, token); // Save to Store
+      setAuth(user, token);
       Cookies.set("token", token, { expires: 30 });
       
       toast.success(`Welcome back, ${user.name}!`);
-      router.push("/dashboard");
+      
+      // Redirect based on onboarding status
+      if (user.hasCompletedOnboarding) {
+        router.push("/dashboard");
+      } else {
+        router.push("/onboarding/score");
+      }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error("Login Failed", { description: err.response?.data?.message || "Invalid credentials" });
@@ -135,11 +141,13 @@ export default function AuthPage() {
       const { token, onboardingNote, ...userRest } = res.data.data;
       const user = { ...userRest, onboardingNote };
       
-      setAuth(user, token); // Save to Store
+      setAuth(user, token);
       Cookies.set("token", token, { expires: 30 });
       
       toast.success("Welcome!", { description: onboardingNote });
-      router.push("/dashboard");
+      
+      // New users go to onboarding
+      router.push("/onboarding/score");
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error("Registration Failed", { description: err.response?.data?.message || "Please try again" });
@@ -195,26 +203,26 @@ export default function AuthPage() {
   const prevStep = () => setSignupStep((s) => Math.max(s - 1, 1));
 
   return (
-    <div className="relative flex justify-center items-center min-h-screen p-4 overflow-hidden bg-black selection:bg-primary/30">
+    <div className="relative flex justify-center items-center min-h-screen p-4 overflow-hidden bg-black selection:bg-white/20">
       
-      {/* Background Ambience */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] opacity-50 animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] opacity-50 delay-1000 animate-pulse" />
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.05]" />
+      {/* Background Ambience - Now grayscale */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] opacity-50 animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] opacity-50 delay-1000 animate-pulse" />
+      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03]" />
 
-      <Card className="relative w-full max-w-lg overflow-hidden border border-white/10 shadow-2xl bg-zinc-900/60 backdrop-blur-2xl ring-1 ring-white/5 md:rounded-3xl flex flex-col min-h-screen md:min-h-auto md:h-auto">
+      <Card className="relative w-full max-w-lg overflow-hidden border border-white/10 shadow-2xl bg-zinc-950/80 backdrop-blur-2xl ring-1 ring-white/5 md:rounded-3xl flex flex-col min-h-screen md:min-h-auto md:h-auto">
         
         {/* Header - Sticky & Glassy */}
-        <div className="p-8 pb-4 flex flex-col items-center border-b border-white/5 shrink-0 bg-zinc-900/40 backdrop-blur-md sticky top-0 z-20">
+        <div className="p-8 pb-4 flex flex-col items-center border-b border-white/10 shrink-0 bg-zinc-950/60 backdrop-blur-md sticky top-0 z-20">
           <div className="relative mb-4">
-             <div className="absolute inset-0 bg-primary/50 blur-xl rounded-full opacity-50" />
-             <Image src="/logo.svg" alt="FitMetric" width={48} height={48} className="relative z-10 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
+             <div className="absolute inset-0 bg-white/20 blur-xl rounded-full opacity-50" />
+             <Image src="/logo.svg" alt="FitMetric" width={48} height={48} className="relative z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] invert" />
           </div>
           
           {mode === "login" ? (
              <div className="text-center space-y-1">
                 <h1 className="text-3xl font-bold tracking-tight text-white">Welcome Back</h1>
-                <p className="text-zinc-400 text-sm">Resume your fitness journey</p>
+                <p className="text-zinc-500 text-sm">Resume your fitness journey</p>
              </div>
           ) : (
              <div className="w-full mt-2">
@@ -223,12 +231,12 @@ export default function AuthPage() {
                         <h1 className="text-xl font-bold text-white">Create Account</h1>
                         <p className="text-xs text-zinc-500">Let&apos;s get you set up</p>
                     </div>
-                    <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded-full border border-primary/20">Step {signupStep}/4</span>
+                    <span className="text-xs font-mono text-white bg-white/10 px-2 py-1 rounded-full border border-white/20">Step {signupStep}/4</span>
                 </div>
-                {/* Neon Progress Bar */}
+                {/* Progress Bar */}
                 <div className="flex gap-2 h-1.5 w-full">
                     {signupSteps.map((s) => (
-                        <div key={s.id} className={`flex-1 rounded-full transition-all duration-500 ${signupStep >= s.id ? 'bg-gradient-to-r from-primary to-emerald-400 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-zinc-800'}`} />
+                        <div key={s.id} className={`flex-1 rounded-full transition-all duration-500 ${signupStep >= s.id ? 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'bg-zinc-800'}`} />
                     ))}
                 </div>
              </div>
@@ -237,7 +245,7 @@ export default function AuthPage() {
 
         {/* Mode Toggle - Stylish Pill */}
         {mode === "login" && (
-            <div className="mx-8 mt-6 p-1 bg-zinc-950/50 rounded-xl border border-white/5 flex shrink-0 relative">
+            <div className="mx-8 mt-6 p-1 bg-zinc-900/50 rounded-xl border border-white/10 flex shrink-0 relative">
                 <button
                     onClick={() => { setMode("login"); setSignupStep(1); }}
                     className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 z-10 text-white shadow-lg bg-zinc-800"
@@ -246,7 +254,7 @@ export default function AuthPage() {
                 </button>
                 <button
                     onClick={() => setMode("signup")}
-                    className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 z-10 text-zinc-500 hover:text-zinc-300"
+                    className="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 z-10 text-zinc-500 hover:text-white"
                 >
                     Sign Up
                 </button>
@@ -268,29 +276,29 @@ export default function AuthPage() {
                   <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-5 pt-2">
                     <FormField control={loginForm.control} name="email" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Email Address</FormLabel>
+                        <FormLabel className="text-zinc-400">Email Address</FormLabel>
                         <FormControl>
-                            <Input type="email" placeholder="you@example.com" className="h-12 bg-zinc-950/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:ring-primary/50 focus:border-primary/50 transition-all rounded-xl" {...field} />
+                            <Input type="email" placeholder="you@example.com" className="h-12 bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:ring-white/20 focus:border-white/30 transition-all rounded-xl" {...field} />
                         </FormControl>
-                        <FormMessage className="text-red-400" />
+                        <FormMessage className="text-zinc-400" />
                       </FormItem>
                     )} />
                     <FormField control={loginForm.control} name="password" render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Password</FormLabel>
+                        <FormLabel className="text-zinc-400">Password</FormLabel>
                         <FormControl>
-                            <Input type="password" placeholder="••••••••" className="h-12 bg-zinc-950/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:ring-primary/50 focus:border-primary/50 transition-all rounded-xl" {...field} />
+                            <Input type="password" placeholder="••••••••" className="h-12 bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-600 focus:ring-white/20 focus:border-white/30 transition-all rounded-xl" {...field} />
                         </FormControl>
-                        <FormMessage className="text-red-400" />
+                        <FormMessage className="text-zinc-400" />
                       </FormItem>
                     )} />
                     
-                    <Button type="submit" disabled={loading} className="w-full h-12 bg-gradient-to-r from-primary to-emerald-500 hover:to-emerald-400 text-black font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all duration-300 mt-4">
+                    <Button type="submit" disabled={loading} className="w-full h-12 bg-white hover:bg-zinc-200 text-black font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300 mt-4">
                       {loading ? <Loader2 className="animate-spin" /> : "Sign In & Start"}
                     </Button>
                     
                     <div className="text-center pt-6">
-                        <p className="text-sm text-zinc-500">New here? <button type="button" onClick={() => setMode("signup")} className="text-primary hover:text-emerald-300 hover:underline font-semibold transition-colors">Create free account</button></p>
+                        <p className="text-sm text-zinc-500">New here? <button type="button" onClick={() => setMode("signup")} className="text-white hover:text-zinc-300 hover:underline font-semibold transition-colors">Create free account</button></p>
                     </div>
                   </form>
                 </Form>
@@ -309,40 +317,39 @@ export default function AuthPage() {
                     <AnimatePresence mode="wait">
                       {signupStep === 1 && (
                         <motion.div key="step1" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-5">
-                            <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-primary rounded-full"/> Basic Info</h3>
+                            <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-white rounded-full"/> Basic Info</h3>
                           <FormField control={signupForm.control} name="name" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-400">Full Name</FormLabel><FormControl><Input placeholder="John Doe" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="text-zinc-400">Full Name</FormLabel><FormControl><Input placeholder="John Doe" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field} /></FormControl><FormMessage /></FormItem>
                           )} />
                           <FormField control={signupForm.control} name="email" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-400">Email</FormLabel><FormControl><Input type="email" placeholder="you@example.com" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="text-zinc-400">Email</FormLabel><FormControl><Input type="email" placeholder="you@example.com" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field} /></FormControl><FormMessage /></FormItem>
                           )} />
                           <FormField control={signupForm.control} name="password" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-400">Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="text-zinc-400">Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field} /></FormControl><FormMessage /></FormItem>
                           )} />
                         </motion.div>
                       )}
                       
-                      {/* Similar upgrades for other steps, keeping logic but upgrading classes */}
                       {signupStep === 2 && (
                         <motion.div key="step2" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-5">
-                            <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-primary rounded-full"/> Body Stats</h3>
+                            <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-white rounded-full"/> Body Stats</h3>
                           <div className="grid grid-cols-2 gap-4">
                             <FormField control={signupForm.control} name="age" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Age</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field as any} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Age</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field as any} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={signupForm.control} name="gender" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Gender</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Gender</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                             )} />
                           </div>
                           <div className="grid grid-cols-3 gap-4">
                             <FormField control={signupForm.control} name="feet" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Ft</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field as any} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Ft</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field as any} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={signupForm.control} name="inches" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">In</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field as any} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">In</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field as any} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={signupForm.control} name="weight" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Kg</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field as any} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Kg</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field as any} /></FormControl><FormMessage /></FormItem>
                             )} />
                           </div>
                         </motion.div>
@@ -350,22 +357,22 @@ export default function AuthPage() {
 
                       {signupStep === 3 && (
                         <motion.div key="step3" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-5">
-                           <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-primary rounded-full"/> Location</h3>
-                          <Button type="button" variant="outline" onClick={detectLocation} disabled={locationLoading} className="w-full h-12 gap-2 border-primary/20 text-primary hover:bg-primary/10 bg-transparent rounded-xl">
+                           <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-white rounded-full"/> Location</h3>
+                          <Button type="button" variant="outline" onClick={detectLocation} disabled={locationLoading} className="w-full h-12 gap-2 border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl">
                             {locationLoading ? <Loader2 className="animate-spin" /> : <MapPin className="w-4 h-4" />} Auto-Detect Location
                           </Button>
                           <div className="grid grid-cols-2 gap-4">
                             <FormField control={signupForm.control} name="location.country" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Country</FormLabel><FormControl><Input className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Country</FormLabel><FormControl><Input className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={signupForm.control} name="location.state" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">State</FormLabel><FormControl><Input className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">State</FormLabel><FormControl><Input className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={signupForm.control} name="location.district" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">District</FormLabel><FormControl><Input className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">District</FormLabel><FormControl><Input className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={signupForm.control} name="location.town" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Town</FormLabel><FormControl><Input className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Town</FormLabel><FormControl><Input className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                           </div>
                         </motion.div>
@@ -373,19 +380,19 @@ export default function AuthPage() {
 
                       {signupStep === 4 && (
                         <motion.div key="step4" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="space-y-5">
-                           <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-primary rounded-full"/> Final Goal</h3>
+                           <h3 className="text-white font-semibold text-lg flex items-center gap-2"><span className="w-1 h-6 bg-white rounded-full"/> Final Goal</h3>
                           <FormField control={signupForm.control} name="goal" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-400">Primary Goal</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="muscle_gain">Muscle Gain</SelectItem><SelectItem value="weight_loss">Weight Loss</SelectItem><SelectItem value="strength">Strength</SelectItem><SelectItem value="maintenance">Maintenance</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="text-zinc-400">Primary Goal</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="muscle_gain">Muscle Gain</SelectItem><SelectItem value="weight_loss">Weight Loss</SelectItem><SelectItem value="strength">Strength</SelectItem><SelectItem value="maintenance">Maintenance</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                           )} />
                           <FormField control={signupForm.control} name="fitnessLevel" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-400">Fitness Level</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="beginner">Beginner</SelectItem><SelectItem value="intermediate">Intermediate</SelectItem><SelectItem value="advanced">Advanced</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="text-zinc-400">Fitness Level</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="beginner">Beginner</SelectItem><SelectItem value="intermediate">Intermediate</SelectItem><SelectItem value="advanced">Advanced</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                           )} />
                           <div className="grid grid-cols-2 gap-4">
                             <FormField control={signupForm.control} name="activityLevel" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Activity</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="sedentary">Sedentary</SelectItem><SelectItem value="lightly_active">Light</SelectItem><SelectItem value="moderately_active">Moderate</SelectItem><SelectItem value="very_active">Very Active</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Activity</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30"><SelectValue placeholder="Select" /></SelectTrigger></FormControl><SelectContent className="bg-zinc-900 border-zinc-800 text-white"><SelectItem value="sedentary">Sedentary</SelectItem><SelectItem value="lightly_active">Light</SelectItem><SelectItem value="moderately_active">Moderate</SelectItem><SelectItem value="very_active">Very Active</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                             )} />
                             <FormField control={signupForm.control} name="pushups" render={({ field }) => (
-                              <FormItem><FormLabel className="text-zinc-400">Max Pushups</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-950/50 border-zinc-800 text-white rounded-xl focus:border-primary/50" {...field as any} /></FormControl><FormMessage /></FormItem>
+                              <FormItem><FormLabel className="text-zinc-400">Max Pushups</FormLabel><FormControl><Input type="number" className="h-12 bg-zinc-900/50 border-zinc-800 text-white rounded-xl focus:border-white/30" {...field as any} /></FormControl><FormMessage /></FormItem>
                             )} />
                           </div>
                         </motion.div>
@@ -400,7 +407,7 @@ export default function AuthPage() {
 
         {/* Bottom Nav for Signup (Fixed & Floating) */}
         {mode === "signup" && (
-            <div className="flex justify-between items-center p-6 border-t border-white/5 bg-zinc-950/80 backdrop-blur-xl md:static fixed bottom-0 left-0 right-0 z-20">
+            <div className="flex justify-between items-center p-6 border-t border-white/10 bg-zinc-950/90 backdrop-blur-xl md:static fixed bottom-0 left-0 right-0 z-20">
                 <Button 
                     type="button" 
                     variant="ghost" 
@@ -411,9 +418,9 @@ export default function AuthPage() {
                 </Button>
                 
                 {signupStep < 4 ? (
-                    <Button type="button" onClick={nextStep} className="bg-gradient-to-r from-primary to-emerald-500 hover:to-emerald-400 text-black font-bold px-8 h-12 rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all">Next <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                    <Button type="button" onClick={nextStep} className="bg-white hover:bg-zinc-200 text-black font-bold px-8 h-12 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all">Next <ChevronRight className="w-4 h-4 ml-1" /></Button>
                 ) : (
-                    <Button type="button" onClick={signupForm.handleSubmit(onSignupSubmit)} disabled={loading} className="bg-gradient-to-r from-primary to-emerald-500 hover:to-emerald-400 text-black font-bold px-8 h-12 rounded-xl shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-all">
+                    <Button type="button" onClick={signupForm.handleSubmit(onSignupSubmit)} disabled={loading} className="bg-white hover:bg-zinc-200 text-black font-bold px-8 h-12 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-all">
                         {loading ? <Loader2 className="animate-spin" /> : "Complete Setup"}
                     </Button>
                 )}

@@ -11,6 +11,9 @@ import {
   Settings,
   User,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import Cookies from "js-cookie"
+import { useAuthStore } from "@/store/useAuthStore"
 
 import {
   Sidebar,
@@ -62,6 +65,15 @@ const navSecondary = [
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, logout } = useAuthStore()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout() // Clear Zustand Store
+    Cookies.remove("token") // Clear Cookie
+    router.push("/auth") // Redirect
+  }
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -124,14 +136,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+            <SidebarMenuButton 
+              size="lg" 
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              onClick={handleLogout}
+            >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src="/avatars/shadcn.jpg" alt="User" />
+                <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} alt={user?.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-white">Guest User</span>
-                <span className="truncate text-xs">guest@example.com</span>
+                <span className="truncate font-semibold text-white">{user?.name || "Guest"}</span>
+                <span className="truncate text-xs">{user?.email || "No Email"}</span>
               </div>
               <LogOut className="ml-auto size-4" />
             </SidebarMenuButton>

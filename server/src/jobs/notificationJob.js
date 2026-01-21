@@ -27,7 +27,10 @@ const startNotificationJob = () => {
       const stats = { totalVolume, daysActive };
 
       // 2. Use Gemini Integration to generate content
-      const message = await GeminiClient.generateNotification(mockUser.name, stats);
+      let message = await GeminiClient.generateNotification(mockUser.name, stats);
+      if (!message) {
+        message = `Week wrapped! You worked out ${stats.daysActive} times. Keep it up!`;
+      }
 
       // 3. Send Notification (Mock send)
       console.log(`[NOTIFICATION SENT to ${mockUser.name}]: ${message}`);

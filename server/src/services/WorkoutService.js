@@ -66,7 +66,8 @@ class WorkoutService {
 
     try {
       // Use Integration Layer
-      return await GeminiClient.generateText(prompt);
+      const feedback = await GeminiClient.generateText(prompt);
+      return feedback || 'Great workout! Keep pushing your limits!';
     } catch (error) {
       console.error('AI Service Error:', error);
       return 'Great workout! AI feedback is temporarily unavailable, but keep pushing limits!';

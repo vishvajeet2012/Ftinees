@@ -9,6 +9,7 @@ const workoutRoutes = require('./src/routes/workoutRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 const exerciseRoutes = require('./src/routes/exerciseRoutes');
 const metricRoutes = require('./src/routes/metricRoutes');
+const planRoutes = require('./src/routes/planRoutes');
 const startNotificationJob = require('./src/jobs/notificationJob');
 
 // Connect to Database
@@ -35,6 +36,7 @@ app.use('/api/workouts', workoutRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/exercises', exerciseRoutes);
 app.use('/api/metrics', metricRoutes);
+app.use('/api/plans', planRoutes);
 
 // Health Check
 app.get('/', (req, res) => {

@@ -1,5 +1,8 @@
+"use client";
+import { useEffect } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { Separator } from "@/components/ui/separator"
+import { useAuthStore } from "@/store/useAuthStore"
 import {
   SidebarInset,
   SidebarProvider,
@@ -11,6 +14,11 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const fetchUser = useAuthStore((state) => state.fetchUser);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
   return (
     <SidebarProvider>
       <AppSidebar />

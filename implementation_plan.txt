@@ -1,0 +1,65 @@
+# Exercise Plan Onboarding Flow - Implementation Plan
+
+## User Flow
+Register → Show Fitness Score → Generate Exercise Plan → Dashboard
+
+---
+
+## BACKEND CHANGES
+
+### 1. NEW: ExercisePlan.js (Model)
+Path: server/src/models/ExercisePlan.js
+
+Schema fields:
+- userId - Reference to User
+- planName - "Beginner Strength", "Weight Loss", etc.
+- duration - 4 weeks, 8 weeks
+- daysPerWeek - 3, 4, 5
+- exercises[] - Array of daily exercises
+- startDate, endDate
+- status - active/completed
+
+### 2. NEW: planService.js
+Path: server/src/services/planService.js
+
+- generatePlan(userData) - Create personalized plan based on fitness score
+- Uses heuristic rules + AI to select exercises
+
+### 3. NEW: planRoutes.js
+Path: server/src/routes/planRoutes.js
+
+Endpoints:
+- POST /api/plans/generate - Generate new plan for user
+- GET /api/plans/current - Get user's active plan
+- PUT /api/plans/:id/complete - Mark plan as complete
+
+### 4. MODIFY: User.js
+Add field: hasCompletedOnboarding: Boolean (default: false)
+
+---
+
+## FRONTEND CHANGES
+
+### 1. NEW: /onboarding/score/page.tsx
+- Display user's TensorFlow fitness score with animation
+- Show breakdown (BMI, activity level, etc.)
+- "Generate My Plan" CTA button
+
+### 2. NEW: /onboarding/plan/page.tsx
+- Call API to generate plan
+- Show weekly workout schedule
+- Allow minor adjustments
+- "Start My Journey" button → marks onboarding complete → dashboard
+
+### 3. MODIFY: middleware.ts
+- If user logged in but hasCompletedOnboarding === false
+- Redirect to /onboarding/score instead of dashboard
+
+---
+
+## TESTING
+
+1. Register new user → Should see score page, not dashboard
+2. Generate plan → Should create plan in DB
+3. Complete onboarding → Should access dashboard
+4. Login again → Should go directly to dashboard (not onboarding)

@@ -52,7 +52,7 @@ export default function DashboardPage() {
           <p className="text-zinc-400">Ready to crush your goals today?</p>
         </div>
         <div className="flex gap-2">
-            <Button className="bg-gradient-to-r from-primary to-emerald-500 text-black font-bold shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all">
+            <Button className="bg-linear-to-r from-primary to-emerald-500 text-black font-bold shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all">
                 <Dumbbell className="mr-2 h-4 w-4" /> Log Workout
             </Button>
         </div>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* AI Insight Placeholder */}
-        <Card className="col-span-3 bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border-white/5 backdrop-blur-sm relative overflow-hidden">
+        <Card className="col-span-3 bg-linear-to-br from-indigo-900/20 to-purple-900/20 border-white/5 backdrop-blur-sm relative overflow-hidden">
              <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.05]" />
              <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-[50px]" />
              

@@ -20,8 +20,10 @@ class GeminiClient {
       const response = await result.response;
       return response.text();
     } catch (error) {
-      console.error('Gemini Generation Error:', error);
-      throw new Error('Failed to generate content from Gemini AI.');
+      // Soft fail: Just warn and return null so the app continues
+      console.warn('⚠️ Gemini AI is unavailable or errored (Check quota/API key). Skipping AI feature.');
+      // console.error(error); // Uncomment for debugging
+      return null;
     }
   }
 
